@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TRDR.5 Discipline</title>
     
-    <!-- LINK ICON LOGO BARU LU -->
+    <!-- LINK ICON LOGO -->
     <link rel="icon" type="image/png" href="https://i.postimg.cc/85PfTQbL/1772296982952.png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/85PfTQbL/1772296982952.png">
 
-    <!-- Meta PWA -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#020617">
@@ -46,16 +45,34 @@
 
         .hero-bal {
             background: linear-gradient(145deg, #1e293b, #0f172a);
-            padding: 30px 20px;
+            padding: 25px 20px;
             border-radius: 24px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
         .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
-        .bal-val { font-size: 36px; font-weight: 800; color: #fff; margin: 5px 0; }
+        .bal-val { font-size: 32px; font-weight: 800; color: #fff; margin: 5px 0; }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+        }
+
+        .stat-val { font-size: 18px; font-weight: bold; margin-top: 4px; }
+        .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; }
 
         .card {
             background: var(--card);
@@ -84,10 +101,12 @@
             padding: 18px; border-radius: 14px; font-weight: 800; font-size: 16px;
         }
 
+        .history-title { font-size: 14px; font-weight: bold; margin: 10px 0 10px 5px; color: var(--text-dim); display: flex; align-items: center; justify-content: space-between; }
+        
         .entry-item {
-            background: var(--card); padding: 16px; border-radius: 16px;
+            background: var(--card); padding: 14px; border-radius: 16px;
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 10px; border-left: 5px solid var(--accent);
+            margin-bottom: 8px; border-left: 4px solid var(--accent);
         }
 
         .entry-item.win { border-left-color: var(--success); }
@@ -96,14 +115,36 @@
 </head>
 <body>
     <div class="container">
+        <!-- Header Balance -->
         <div class="hero-bal">
             <div class="label">Total Saldo Demo</div>
             <div id="bal-txt" class="bal-val">$1.000,00</div>
         </div>
 
+        <!-- Dashboard Statistik -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Win Rate</div>
+                <div id="stat-wr" class="stat-val" style="color: var(--success);">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Profit Factor</div>
+                <div id="stat-pf" class="stat-val" style="color: var(--accent);">0.0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Trades</div>
+                <div id="stat-tt" class="stat-val">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Net Profit</div>
+                <div id="stat-np" class="stat-val">$0</div>
+            </div>
+        </div>
+
+        <!-- Input Section -->
         <div class="card">
             <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px;">
-                <span>Disiplin Entry</span>
+                <span>Disiplin Hari Ini</span>
                 <span id="q-txt">0/5</span>
             </div>
             <div class="progress-container"><div id="p-bar" class="progress-bar"></div></div>
@@ -114,29 +155,26 @@
                     <button id="l-btn" class="tgl" onclick="setType(false)">LOSS</button>
                 </div>
                 <input type="number" id="amt-in" placeholder="0.00" inputmode="decimal">
-                <button class="btn-submit" onclick="save()">SIMPAN DATA</button>
+                <button class="btn-submit" onclick="save()">SIMPAN TRADE</button>
             </div>
             <div id="done-ui" style="display:none; text-align:center; color:var(--success); font-weight:bold; padding:10px;">
-                SESI SELESAI. LANJUT BESOK! 🧘‍♂️
+                SESI SELESAI. DISIPLIN TERJAGA! ✅
             </div>
         </div>
 
+        <!-- Journal History -->
+        <div class="history-title">RIWAYAT JURNAL</div>
         <div id="logs"></div>
 
-        <button onclick="reset()" style="width:100%; background:none; border:none; color:var(--text-dim); font-size:10px; margin-top:40px; text-decoration:underline; opacity:0.3;">RESET DATABASE</button>
+        <button onclick="reset()" style="width:100%; background:none; border:none; color:var(--text-dim); font-size:10px; margin-top:40px; text-decoration:underline; opacity:0.3;">RESET SEMUA DATA</button>
     </div>
 
     <script>
-        // Update database key to force clear old data and show new icon
-        const DB_KEY = 'tr_final_v100';
+        // Gunakan key DB baru agar statistik fresh
+        const DB_KEY = 'tr_stats_v1';
         let balance = parseFloat(localStorage.getItem(DB_KEY + '_bal') || 1000);
-        let entries = JSON.parse(localStorage.getItem(DB_KEY + '_logs') || '[]');
+        let allEntries = JSON.parse(localStorage.getItem(DB_KEY + '_all_logs') || '[]');
         let isProfit = true;
-
-        if (localStorage.getItem(DB_KEY + '_date') !== new Date().toLocaleDateString()) {
-            entries = [];
-            localStorage.setItem(DB_KEY + '_date', new Date().toLocaleDateString());
-        }
 
         function setType(val) {
             isProfit = val;
@@ -144,41 +182,101 @@
             document.getElementById('l-btn').className = !val ? 'tgl active loss' : 'tgl';
         }
 
+        function calculateStats() {
+            const total = allEntries.length;
+            const wins = allEntries.filter(e => e.win).length;
+            const losses = total - wins;
+            
+            const winRate = total > 0 ? (wins / total * 100).toFixed(1) : 0;
+            
+            let totalProfit = 0;
+            let totalLoss = 0;
+            allEntries.forEach(e => {
+                if (e.val > 0) totalProfit += e.val;
+                else totalLoss += Math.abs(e.val);
+            });
+
+            const profitFactor = totalLoss > 0 ? (totalProfit / totalLoss).toFixed(2) : totalProfit.toFixed(2);
+            const netProfit = totalProfit - totalLoss;
+
+            // Update UI Stats
+            document.getElementById('stat-wr').innerText = winRate + '%';
+            document.getElementById('stat-pf').innerText = profitFactor;
+            document.getElementById('stat-tt').innerText = total;
+            document.getElementById('stat-np').innerText = (netProfit >= 0 ? '+' : '') + '$' + netProfit.toLocaleString('id-ID', {minimumFractionDigits:2});
+            document.getElementById('stat-np').style.color = netProfit >= 0 ? 'var(--success)' : 'var(--danger)';
+        }
+
         function update() {
             document.getElementById('bal-txt').innerText = '$' + balance.toLocaleString('id-ID', {minimumFractionDigits:2});
-            document.getElementById('q-txt').innerText = entries.length + '/5';
-            document.getElementById('p-bar').style.width = (entries.length / 5 * 100) + '%';
             
-            document.getElementById('input-ui').style.display = entries.length >= 5 ? 'none' : 'block';
-            document.getElementById('done-ui').style.display = entries.length >= 5 ? 'block' : 'none';
+            const today = new Date().toLocaleDateString();
+            const todayEntries = allEntries.filter(e => e.date === today);
+            
+            document.getElementById('q-txt').innerText = todayEntries.length + '/5';
+            document.getElementById('p-bar').style.width = (Math.min(todayEntries.length, 5) / 5 * 100) + '%';
+            
+            document.getElementById('input-ui').style.display = todayEntries.length >= 5 ? 'none' : 'block';
+            document.getElementById('done-ui').style.display = todayEntries.length >= 5 ? 'block' : 'none';
+
+            calculateStats();
 
             const list = document.getElementById('logs');
             list.innerHTML = '';
-            [...entries].reverse().forEach(e => {
-                const div = document.createElement('div');
-                div.className = `entry-item ${e.win ? 'win' : 'loss'}`;
-                div.innerHTML = `
-                    <div><div style="font-weight:bold">Trade Entry</div><div style="font-size:10px;color:var(--text-dim)">${e.time}</div></div>
-                    <div style="font-weight:bold; color:${e.win ? 'var(--success)' : 'var(--danger)'}">${e.win?'+':''}${e.val.toFixed(2)}$</div>
-                `;
-                list.appendChild(div);
-            });
+
+            if (allEntries.length === 0) {
+                list.innerHTML = '<div style="text-align:center; color:var(--text-dim); font-size:12px; padding:20px;">Belum ada data trading.</div>';
+            } else {
+                [...allEntries].reverse().forEach(e => {
+                    const div = document.createElement('div');
+                    div.className = `entry-item ${e.win ? 'win' : 'loss'}`;
+                    div.innerHTML = `
+                        <div>
+                            <div style="font-weight:bold">Entry</div>
+                            <div style="font-size:10px;color:var(--text-dim)">${e.date} • ${e.time}</div>
+                        </div>
+                        <div style="font-weight:bold; color:${e.win ? 'var(--success)' : 'var(--danger)'}">
+                            ${e.win?'+':''}${e.val.toLocaleString('id-ID', {minimumFractionDigits:2})}$
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            }
         }
 
         function save() {
             const input = document.getElementById('amt-in');
             const val = parseFloat(input.value);
-            if (!val || entries.length >= 5) return;
+            const today = new Date().toLocaleDateString();
+            const todayEntriesCount = allEntries.filter(e => e.date === today).length;
+
+            if (!val || todayEntriesCount >= 5) return;
+
             const finalVal = isProfit ? val : -val;
-            entries.push({ val: finalVal, win: isProfit, time: new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) });
+            const newEntry = { 
+                val: finalVal, 
+                win: isProfit, 
+                date: today,
+                time: new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) 
+            };
+
+            allEntries.push(newEntry);
             balance += finalVal;
+
             localStorage.setItem(DB_KEY + '_bal', balance);
-            localStorage.setItem(DB_KEY + '_logs', JSON.stringify(entries));
+            localStorage.setItem(DB_KEY + '_all_logs', JSON.stringify(allEntries));
+            
             input.value = '';
             update();
         }
 
-        function reset() { if (confirm('Reset semua data?')) { localStorage.clear(); location.reload(); } }
+        function reset() { 
+            if (confirm('Hapus PERMANEN semua riwayat dan statistik?')) { 
+                localStorage.clear(); 
+                location.reload(); 
+            } 
+        }
+        
         update();
     </script>
 </body>
