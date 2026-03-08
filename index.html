@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TRDR.5 Discipline</title>
     
-    <!-- LINK ICON LOGO -->
+    <!-- LINK ICON LOGO (TETAP SAMA) -->
     <link rel="icon" type="image/png" href="https://i.postimg.cc/85PfTQbL/1772296982952.png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/85PfTQbL/1772296982952.png">
 
@@ -50,12 +50,25 @@
             text-align: center;
             margin-bottom: 15px;
             border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        .edit-bal {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 5px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
         }
 
         .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
         .bal-val { font-size: 32px; font-weight: 800; color: #fff; margin: 5px 0; }
 
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -90,33 +103,58 @@
         .tgl.active.win { background: var(--success); color: white; }
         .tgl.active.loss { background: var(--danger); color: white; }
 
-        input {
+        input, textarea {
             width: 100%; background: #020617; border: 1px solid #1e293b;
-            padding: 16px; border-radius: 14px; color: white; margin-bottom: 15px;
-            font-size: 18px; outline: none; text-align: center;
+            padding: 16px; border-radius: 14px; color: white; margin-bottom: 12px;
+            font-size: 16px; outline: none;
         }
+        
+        input { text-align: center; font-size: 18px; }
+        textarea { text-align: left; font-size: 14px; height: 80px; resize: none; }
 
         .btn-submit {
             width: 100%; background: #fff; color: #000; border: none;
             padding: 18px; border-radius: 14px; font-weight: 800; font-size: 16px;
         }
 
-        .history-title { font-size: 14px; font-weight: bold; margin: 10px 0 10px 5px; color: var(--text-dim); display: flex; align-items: center; justify-content: space-between; }
+        .history-title { font-size: 14px; font-weight: bold; margin: 10px 0 10px 5px; color: var(--text-dim); }
         
         .entry-item {
-            background: var(--card); padding: 14px; border-radius: 16px;
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 8px; border-left: 4px solid var(--accent);
+            background: var(--card); padding: 16px; border-radius: 20px;
+            margin-bottom: 10px; border-left: 5px solid var(--accent);
+            display: flex; flex-direction: column; gap: 8px;
         }
+
+        .entry-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .entry-note { font-size: 12px; color: var(--text-dim); background: rgba(0,0,0,0.2); padding: 8px; border-radius: 10px; font-style: italic; }
 
         .entry-item.win { border-left-color: var(--success); }
         .entry-item.loss { border-left-color: var(--danger); }
+
+        /* Modal Edit Saldo */
+        #modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
+    <div id="modal">
+        <div class="card" style="width: 100%; max-width: 320px;">
+            <div class="label" style="margin-bottom: 15px;">Ubah Saldo Current</div>
+            <input type="number" id="new-bal-input" placeholder="1000.00">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-submit" style="background: #1e293b; color: white;" onclick="closeModal()">Batal</button>
+                <button class="btn-submit" onclick="updateBalanceManually()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Header Balance -->
         <div class="hero-bal">
+            <button class="edit-bal" onclick="openModal()">✎ Edit</button>
             <div class="label">Total Saldo Demo</div>
             <div id="bal-txt" class="bal-val">$1.000,00</div>
         </div>
@@ -128,16 +166,16 @@
                 <div id="stat-wr" class="stat-val" style="color: var(--success);">0%</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Profit Factor</div>
+                <div class="stat-label">Prof. Factor</div>
                 <div id="stat-pf" class="stat-val" style="color: var(--accent);">0.0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Total Trades</div>
-                <div id="stat-tt" class="stat-val">0</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Net Profit</div>
                 <div id="stat-np" class="stat-val">$0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Trade</div>
+                <div id="stat-tt" class="stat-val">0</div>
             </div>
         </div>
 
@@ -155,10 +193,11 @@
                     <button id="l-btn" class="tgl" onclick="setType(false)">LOSS</button>
                 </div>
                 <input type="number" id="amt-in" placeholder="0.00" inputmode="decimal">
-                <button class="btn-submit" onclick="save()">SIMPAN TRADE</button>
+                <textarea id="note-in" placeholder="Alasan entry / Evaluasi (Opsional)..."></textarea>
+                <button class="btn-submit" onclick="save()">SIMPAN JURNAL</button>
             </div>
             <div id="done-ui" style="display:none; text-align:center; color:var(--success); font-weight:bold; padding:10px;">
-                SESI SELESAI. DISIPLIN TERJAGA! ✅
+                TARGET HARIAN SELESAI! 🧘‍♂️
             </div>
         </div>
 
@@ -166,12 +205,11 @@
         <div class="history-title">RIWAYAT JURNAL</div>
         <div id="logs"></div>
 
-        <button onclick="reset()" style="width:100%; background:none; border:none; color:var(--text-dim); font-size:10px; margin-top:40px; text-decoration:underline; opacity:0.3;">RESET SEMUA DATA</button>
+        <button onclick="reset()" style="width:100%; background:none; border:none; color:var(--text-dim); font-size:10px; margin-top:40px; text-decoration:underline; opacity:0.3; padding-bottom: 50px;">RESET DATABASE</button>
     </div>
 
     <script>
-        // Gunakan key DB baru agar statistik fresh
-        const DB_KEY = 'tr_stats_v1';
+        const DB_KEY = 'tr_v_eval_final';
         let balance = parseFloat(localStorage.getItem(DB_KEY + '_bal') || 1000);
         let allEntries = JSON.parse(localStorage.getItem(DB_KEY + '_all_logs') || '[]');
         let isProfit = true;
@@ -182,35 +220,49 @@
             document.getElementById('l-btn').className = !val ? 'tgl active loss' : 'tgl';
         }
 
+        function openModal() {
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('new-bal-input').value = balance;
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function updateBalanceManually() {
+            const newVal = parseFloat(document.getElementById('new-bal-input').value);
+            if (!isNaN(newVal)) {
+                balance = newVal;
+                localStorage.setItem(DB_KEY + '_bal', balance);
+                update();
+                closeModal();
+            }
+        }
+
         function calculateStats() {
             const total = allEntries.length;
             const wins = allEntries.filter(e => e.win).length;
-            const losses = total - wins;
-            
             const winRate = total > 0 ? (wins / total * 100).toFixed(1) : 0;
             
-            let totalProfit = 0;
-            let totalLoss = 0;
+            let totalProfit = 0, totalLoss = 0;
             allEntries.forEach(e => {
                 if (e.val > 0) totalProfit += e.val;
                 else totalLoss += Math.abs(e.val);
             });
 
-            const profitFactor = totalLoss > 0 ? (totalProfit / totalLoss).toFixed(2) : totalProfit.toFixed(2);
-            const netProfit = totalProfit - totalLoss;
+            const pf = totalLoss > 0 ? (totalProfit / totalLoss).toFixed(2) : totalProfit.toFixed(2);
+            const net = totalProfit - totalLoss;
 
-            // Update UI Stats
             document.getElementById('stat-wr').innerText = winRate + '%';
-            document.getElementById('stat-pf').innerText = profitFactor;
+            document.getElementById('stat-pf').innerText = pf;
             document.getElementById('stat-tt').innerText = total;
-            document.getElementById('stat-np').innerText = (netProfit >= 0 ? '+' : '') + '$' + netProfit.toLocaleString('id-ID', {minimumFractionDigits:2});
-            document.getElementById('stat-np').style.color = netProfit >= 0 ? 'var(--success)' : 'var(--danger)';
+            document.getElementById('stat-np').innerText = (net >= 0 ? '+' : '') + '$' + net.toLocaleString('id-ID', {minimumFractionDigits:2});
+            document.getElementById('stat-np').style.color = net >= 0 ? 'var(--success)' : 'var(--danger)';
         }
 
         function update() {
             document.getElementById('bal-txt').innerText = '$' + balance.toLocaleString('id-ID', {minimumFractionDigits:2});
-            
-            const today = new Date().toLocaleDateString();
+            const today = new Date().toLocaleDateString('id-ID');
             const todayEntries = allEntries.filter(e => e.date === today);
             
             document.getElementById('q-txt').innerText = todayEntries.length + '/5';
@@ -225,19 +277,22 @@
             list.innerHTML = '';
 
             if (allEntries.length === 0) {
-                list.innerHTML = '<div style="text-align:center; color:var(--text-dim); font-size:12px; padding:20px;">Belum ada data trading.</div>';
+                list.innerHTML = '<div style="text-align:center; color:var(--text-dim); font-size:12px; padding:20px;">Belum ada jurnal trading.</div>';
             } else {
                 [...allEntries].reverse().forEach(e => {
                     const div = document.createElement('div');
                     div.className = `entry-item ${e.win ? 'win' : 'loss'}`;
                     div.innerHTML = `
-                        <div>
-                            <div style="font-weight:bold">Entry</div>
-                            <div style="font-size:10px;color:var(--text-dim)">${e.date} • ${e.time}</div>
+                        <div class="entry-header">
+                            <div>
+                                <div style="font-weight:bold; font-size: 14px;">${e.win ? 'Profit Trade' : 'Loss Trade'}</div>
+                                <div style="font-size:10px;color:var(--text-dim)">${e.date} • ${e.time}</div>
+                            </div>
+                            <div style="font-weight:bold; color:${e.win ? 'var(--success)' : 'var(--danger)'}">
+                                ${e.win?'+':''}${e.val.toLocaleString('id-ID', {minimumFractionDigits:2})}$
+                            </div>
                         </div>
-                        <div style="font-weight:bold; color:${e.win ? 'var(--success)' : 'var(--danger)'}">
-                            ${e.win?'+':''}${e.val.toLocaleString('id-ID', {minimumFractionDigits:2})}$
-                        </div>
+                        ${e.note ? `<div class="entry-note">"${e.note}"</div>` : ''}
                     `;
                     list.appendChild(div);
                 });
@@ -245,33 +300,34 @@
         }
 
         function save() {
-            const input = document.getElementById('amt-in');
-            const val = parseFloat(input.value);
-            const today = new Date().toLocaleDateString();
-            const todayEntriesCount = allEntries.filter(e => e.date === today).length;
+            const amtInput = document.getElementById('amt-in');
+            const noteInput = document.getElementById('note-in');
+            const val = parseFloat(amtInput.value);
+            const today = new Date().toLocaleDateString('id-ID');
+            const todayCount = allEntries.filter(e => e.date === today).length;
 
-            if (!val || todayEntriesCount >= 5) return;
+            if (!val || todayCount >= 5) return;
 
             const finalVal = isProfit ? val : -val;
-            const newEntry = { 
+            allEntries.push({ 
                 val: finalVal, 
                 win: isProfit, 
+                note: noteInput.value.trim(),
                 date: today,
                 time: new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) 
-            };
+            });
 
-            allEntries.push(newEntry);
             balance += finalVal;
-
             localStorage.setItem(DB_KEY + '_bal', balance);
             localStorage.setItem(DB_KEY + '_all_logs', JSON.stringify(allEntries));
             
-            input.value = '';
+            amtInput.value = '';
+            noteInput.value = '';
             update();
         }
 
         function reset() { 
-            if (confirm('Hapus PERMANEN semua riwayat dan statistik?')) { 
+            if (confirm('Hapus PERMANEN semua jurnal dan statistik?')) { 
                 localStorage.clear(); 
                 location.reload(); 
             } 
