@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRDR.5 Discipline</title>
+    <title>TRDR.5 Journal</title>
     
-    <!-- LINK ICON LOGO (TETAP SAMA) -->
+    <!-- LINK ICON LOGO -->
     <link rel="icon" type="image/png" href="https://i.postimg.cc/85PfTQbL/1772296982952.png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/85PfTQbL/1772296982952.png">
 
@@ -41,7 +41,7 @@
             min-height: 100vh;
         }
 
-        .container { width: 100%; max-width: 400px; }
+        .container { width: 100%; max-width: 400px; padding-bottom: 40px; }
 
         .hero-bal {
             background: linear-gradient(145deg, #1e293b, #0f172a);
@@ -55,15 +55,16 @@
 
         .edit-bal {
             position: absolute;
-            right: 20px;
-            top: 20px;
+            right: 15px;
+            top: 15px;
             background: rgba(255,255,255,0.1);
             border: none;
             color: white;
-            padding: 5px;
-            border-radius: 8px;
-            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
             cursor: pointer;
+            text-transform: uppercase;
         }
 
         .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
@@ -95,8 +96,7 @@
             margin-bottom: 20px;
         }
 
-        .progress-container { width: 100%; height: 8px; background: #020617; border-radius: 10px; margin: 15px 0; overflow: hidden; }
-        .progress-bar { height: 100%; width: 0%; background: var(--accent); transition: 0.5s; }
+        .input-header { font-size: 14px; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
 
         .btn-toggle { display: flex; background: #020617; padding: 4px; border-radius: 14px; margin-bottom: 15px; }
         .tgl { flex: 1; padding: 12px; border: none; border-radius: 11px; font-weight: bold; background: transparent; color: var(--text-dim); cursor: pointer; }
@@ -110,14 +110,16 @@
         }
         
         input { text-align: center; font-size: 18px; }
-        textarea { text-align: left; font-size: 14px; height: 80px; resize: none; }
+        textarea { text-align: left; font-size: 14px; height: 70px; resize: none; border-radius: 14px; }
 
         .btn-submit {
             width: 100%; background: #fff; color: #000; border: none;
             padding: 18px; border-radius: 14px; font-weight: 800; font-size: 16px;
+            cursor: pointer; transition: opacity 0.2s;
         }
+        .btn-submit:active { opacity: 0.8; }
 
-        .history-title { font-size: 14px; font-weight: bold; margin: 10px 0 10px 5px; color: var(--text-dim); }
+        .history-title { font-size: 14px; font-weight: bold; margin: 10px 0 10px 5px; color: var(--text-dim); display: flex; justify-content: space-between; }
         
         .entry-item {
             background: var(--card); padding: 16px; border-radius: 20px;
@@ -126,15 +128,14 @@
         }
 
         .entry-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .entry-note { font-size: 12px; color: var(--text-dim); background: rgba(0,0,0,0.2); padding: 8px; border-radius: 10px; font-style: italic; }
+        .entry-note { font-size: 12px; color: var(--text-dim); background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; font-style: italic; line-height: 1.4; }
 
         .entry-item.win { border-left-color: var(--success); }
         .entry-item.loss { border-left-color: var(--danger); }
 
-        /* Modal Edit Saldo */
         #modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center;
             padding: 20px;
         }
     </style>
@@ -142,8 +143,8 @@
 <body>
     <div id="modal">
         <div class="card" style="width: 100%; max-width: 320px;">
-            <div class="label" style="margin-bottom: 15px;">Ubah Saldo Current</div>
-            <input type="number" id="new-bal-input" placeholder="1000.00">
+            <div class="label" style="margin-bottom: 15px;">Sesuaikan Saldo</div>
+            <input type="number" id="new-bal-input" placeholder="1000.00" step="0.01">
             <div style="display: flex; gap: 10px;">
                 <button class="btn-submit" style="background: #1e293b; color: white;" onclick="closeModal()">Batal</button>
                 <button class="btn-submit" onclick="updateBalanceManually()">Simpan</button>
@@ -152,10 +153,10 @@
     </div>
 
     <div class="container">
-        <!-- Header Balance -->
+        <!-- Dashboard Saldo -->
         <div class="hero-bal">
             <button class="edit-bal" onclick="openModal()">✎ Edit</button>
-            <div class="label">Total Saldo Demo</div>
+            <div class="label">Saldo Akun</div>
             <div id="bal-txt" class="bal-val">$1.000,00</div>
         </div>
 
@@ -179,37 +180,31 @@
             </div>
         </div>
 
-        <!-- Input Section -->
+        <!-- Input Journal -->
         <div class="card">
-            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px;">
-                <span>Disiplin Hari Ini</span>
-                <span id="q-txt">0/5</span>
+            <div class="input-header">📝 Input Jurnal Baru</div>
+            <div class="btn-toggle">
+                <button id="w-btn" class="tgl active win" onclick="setType(true)">PROFIT</button>
+                <button id="l-btn" class="tgl" onclick="setType(false)">LOSS</button>
             </div>
-            <div class="progress-container"><div id="p-bar" class="progress-bar"></div></div>
-
-            <div id="input-ui">
-                <div class="btn-toggle">
-                    <button id="w-btn" class="tgl active win" onclick="setType(true)">PROFIT</button>
-                    <button id="l-btn" class="tgl" onclick="setType(false)">LOSS</button>
-                </div>
-                <input type="number" id="amt-in" placeholder="0.00" inputmode="decimal">
-                <textarea id="note-in" placeholder="Alasan entry / Evaluasi (Opsional)..."></textarea>
-                <button class="btn-submit" onclick="save()">SIMPAN JURNAL</button>
-            </div>
-            <div id="done-ui" style="display:none; text-align:center; color:var(--success); font-weight:bold; padding:10px;">
-                TARGET HARIAN SELESAI! 🧘‍♂️
-            </div>
+            <input type="number" id="amt-in" placeholder="0.00" inputmode="decimal">
+            <textarea id="note-in" placeholder="Alasan entry / Evaluasi (Opsional)..."></textarea>
+            <button class="btn-submit" onclick="save()">CATAT TRADE</button>
         </div>
 
-        <!-- Journal History -->
-        <div class="history-title">RIWAYAT JURNAL</div>
+        <!-- History -->
+        <div class="history-title">
+            <span>RIWAYAT JURNAL</span>
+            <span id="trade-count-badge" style="font-size: 10px; opacity: 0.6;"></span>
+        </div>
         <div id="logs"></div>
 
-        <button onclick="reset()" style="width:100%; background:none; border:none; color:var(--text-dim); font-size:10px; margin-top:40px; text-decoration:underline; opacity:0.3; padding-bottom: 50px;">RESET DATABASE</button>
+        <button onclick="reset()" style="width:100%; background:none; border:none; color:var(--text-dim); font-size:10px; margin-top:50px; text-decoration:underline; opacity:0.3;">RESET DATABASE PERMANEN</button>
     </div>
 
     <script>
-        const DB_KEY = 'tr_v_eval_final';
+        // Gunakan Key Baru agar sistem journaling fresh
+        const DB_KEY = 'tr_v_full_journal_unlim';
         let balance = parseFloat(localStorage.getItem(DB_KEY + '_bal') || 1000);
         let allEntries = JSON.parse(localStorage.getItem(DB_KEY + '_all_logs') || '[]');
         let isProfit = true;
@@ -234,7 +229,7 @@
             if (!isNaN(newVal)) {
                 balance = newVal;
                 localStorage.setItem(DB_KEY + '_bal', balance);
-                update();
+                updateUI();
                 closeModal();
             }
         }
@@ -258,26 +253,18 @@
             document.getElementById('stat-tt').innerText = total;
             document.getElementById('stat-np').innerText = (net >= 0 ? '+' : '') + '$' + net.toLocaleString('id-ID', {minimumFractionDigits:2});
             document.getElementById('stat-np').style.color = net >= 0 ? 'var(--success)' : 'var(--danger)';
+            document.getElementById('trade-count-badge').innerText = total + " trades";
         }
 
-        function update() {
+        function updateUI() {
             document.getElementById('bal-txt').innerText = '$' + balance.toLocaleString('id-ID', {minimumFractionDigits:2});
-            const today = new Date().toLocaleDateString('id-ID');
-            const todayEntries = allEntries.filter(e => e.date === today);
-            
-            document.getElementById('q-txt').innerText = todayEntries.length + '/5';
-            document.getElementById('p-bar').style.width = (Math.min(todayEntries.length, 5) / 5 * 100) + '%';
-            
-            document.getElementById('input-ui').style.display = todayEntries.length >= 5 ? 'none' : 'block';
-            document.getElementById('done-ui').style.display = todayEntries.length >= 5 ? 'block' : 'none';
-
             calculateStats();
 
             const list = document.getElementById('logs');
             list.innerHTML = '';
 
             if (allEntries.length === 0) {
-                list.innerHTML = '<div style="text-align:center; color:var(--text-dim); font-size:12px; padding:20px;">Belum ada jurnal trading.</div>';
+                list.innerHTML = '<div style="text-align:center; color:var(--text-dim); font-size:12px; padding:30px; opacity: 0.5;">Belum ada jurnal trading. Mulai catat hari ini!</div>';
             } else {
                 [...allEntries].reverse().forEach(e => {
                     const div = document.createElement('div');
@@ -288,7 +275,7 @@
                                 <div style="font-weight:bold; font-size: 14px;">${e.win ? 'Profit Trade' : 'Loss Trade'}</div>
                                 <div style="font-size:10px;color:var(--text-dim)">${e.date} • ${e.time}</div>
                             </div>
-                            <div style="font-weight:bold; color:${e.win ? 'var(--success)' : 'var(--danger)'}">
+                            <div style="font-weight:bold; font-size: 16px; color:${e.win ? 'var(--success)' : 'var(--danger)'}">
                                 ${e.win?'+':''}${e.val.toLocaleString('id-ID', {minimumFractionDigits:2})}$
                             </div>
                         </div>
@@ -303,18 +290,20 @@
             const amtInput = document.getElementById('amt-in');
             const noteInput = document.getElementById('note-in');
             const val = parseFloat(amtInput.value);
-            const today = new Date().toLocaleDateString('id-ID');
-            const todayCount = allEntries.filter(e => e.date === today).length;
-
-            if (!val || todayCount >= 5) return;
+            
+            if (!val || isNaN(val)) return;
 
             const finalVal = isProfit ? val : -val;
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
             allEntries.push({ 
                 val: finalVal, 
                 win: isProfit, 
                 note: noteInput.value.trim(),
-                date: today,
-                time: new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) 
+                date: dateStr,
+                time: timeStr 
             });
 
             balance += finalVal;
@@ -323,18 +312,19 @@
             
             amtInput.value = '';
             noteInput.value = '';
-            update();
+            updateUI();
         }
 
         function reset() { 
-            if (confirm('Hapus PERMANEN semua jurnal dan statistik?')) { 
+            if (confirm('PERINGATAN: Hapus permanen semua riwayat jurnal dan statistik? Data tidak bisa dikembalikan.')) { 
                 localStorage.clear(); 
                 location.reload(); 
             } 
         }
         
-        update();
+        updateUI();
     </script>
 </body>
 </html>
 
+    
